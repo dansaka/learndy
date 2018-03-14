@@ -1,0 +1,83 @@
+fragment传递数据到activity:fragment定义接口 activity去实现这个接口
+acitivity 传递数据到fragment:1.fragment中定义公共方法，activity中获取fragment实例
+   	 	然后调用公共方法。
+		  					2.fragment setArguments(Bundle)
+							
+							
+isTaskRoot和moveTaskToBack方法简介
+
+
+/* Checks if external storage is available for read and write */
+public boolean isExternalStorageWritable() {
+    String state = Environment.getExternalStorageState();
+    if (Environment.MEDIA_MOUNTED.equals(state)) {
+        return true;
+    }
+    return false;
+}
+
+/* Checks if external storage is available to at least read */
+public boolean isExternalStorageReadable() {
+    String state = Environment.getExternalStorageState();
+    if (Environment.MEDIA_MOUNTED.equals(state) ||
+        Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+        return true;
+    }
+    return false;
+}
+
+
+契约类是用于定义 URI、表格和列名称的常数的容器。
+
+public final class FeedReaderContract {
+    // To prevent someone from accidentally instantiating the contract class,
+    // make the constructor private.
+    private FeedReaderContract() {}
+
+    /* Inner class that defines the table contents */
+    public static class FeedEntry implements BaseColumns {
+        public static final String TABLE_NAME = "entry";
+        public static final String COLUMN_NAME_TITLE = "title";
+        public static final String COLUMN_NAME_SUBTITLE = "subtitle";
+    }
+}
+
+//表的创建和删除语句
+private static final String TEXT_TYPE = " TEXT";
+private static final String COMMA_SEP = ",";
+private static final String SQL_CREATE_ENTRIES =
+    "CREATE TABLE " + FeedEntry.TABLE_NAME + " (" +
+    FeedEntry._ID + " INTEGER PRIMARY KEY," +
+    FeedEntry.COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
+    FeedEntry.COLUMN_NAME_SUBTITLE + TEXT_TYPE + " )";
+
+private static final String SQL_DELETE_ENTRIES =
+    "DROP TABLE IF EXISTS " + FeedEntry.TABLE_NAME;
+	
+	
+
+//数据库操作费事，所以放在子线程中操作 子线程操作需要保证单一的数据库实例
+	private static MyDBService instance;
+	private MyDatabaseHelper myDatabaseHelper;
+
+	private MyDBService(Context context){
+	    myDatabaseHelper = new MyDatabaseHelper(mContext);
+	}
+
+	public static synchronized MyDBService getInstance(Context context){
+	    if(instance == null){
+	        instance = new MyDBService(context);
+	    }
+	    return instance;
+	}
+
+	public synchronized SQLiteDatabase getDataBase() {
+	    if(myDatabaseHelper != null){
+	        db = myDatabaseHelper.getWritableDatabase();
+	    }
+	    return db;
+	}
+	
+	
+	Fragment中启动，Activity中接收结果：使用getActivity().startActivityForResult()
+	Fragment中启动，Fragment中接收结果：使用startActivityForResult()，且在Activity的onActivityResult()中调用super.onActivityResult()
